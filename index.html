@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Base64</title>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style rel="stylesheet">
+        body {
+            height: 600px;
+            width: 800px;
+            margin: auto;
+            margin-top: 100px;
+        }
+    </style>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+    <script type="text/javascript">
+        var API_PROTOCOL = 'http';
+        var API_HOST = '127.0.0.1';
+        var API_PORT = '3000';
+        var API_PATH = `${API_PROTOCOL}://${API_HOST}:${API_PORT}`;
+
+        var convertToBase64;
+        var request = (method, route, attr, callback) => {
+            var API_URL = `${API_PATH}/${route}`;
+            $.ajax({
+                method: method,
+                url: API_URL,
+                data: JSON.stringify(attr),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: (results) => {
+                    return callback(null, results);
+                },
+                error: (error) => {
+                    console.error(error);
+                    return callback(error, null);
+                }
+            });
+        }
+
+        $(document).ready( () => {
+
+            convertToBase64 = () => {
+                // Read File
+                var selectedFile = document.getElementById("inputFile").files;
+                // Check File is not Empty
+                if (selectedFile.length > 0) {
+                    // Select the very first file from list
+                    var fileToLoad = selectedFile[0];
+                    // FileReader function for read the file.
+                    var fileReader = new FileReader();
+                    var base64, fileName;
+                    // Onload of file read the file content
+                    fileReader.onload = (fileLoadedEvent) => {
+
+                        var attributes = {
+                            id: 1,
+                            name: $("#txtName").val(),
+                            base64: fileLoadedEvent.target.result
+                        };
+
+                        request("POST", "modulo/model/method", attributes, (error, attachment) => {
+                            console.log({ attachment });
+                            alert(attachment.annexItemPath);
+                        })
+                    };
+                    // Convert data to base64
+                    fileReader.readAsDataURL(fileToLoad);
+                }
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="form-group has-success">
+        <label class="control-label" for="inputSuccess1">Name do Arquivo</label>
+        <input type="text" class="form-control" id="txtName" aria-describedby="helpBlock2">
+    </div>
+</form>
+<input id="inputFile" type="file" onchange="convertToBase64();" />
+</body>
+</html>
